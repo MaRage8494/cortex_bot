@@ -2,7 +2,6 @@ const axios = require('axios');
 const TelegramBot = require('node-telegram-bot-api');
 require('dotenv').config();
 
-// Замените на свой токен бота Telegram
 const BOT_TOKEN = process.env.TOKEN;
 
 let chatId;
@@ -17,7 +16,6 @@ let cryptoData = {
   ETH: { max: 2000, min: 2000 },
 };
 
-// Создаем экземпляр бота Telegram
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 // Функция для получения курса криптовалюты
@@ -29,11 +27,10 @@ async function getCryptoPrice(symbol) {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
-          'X-CMC_PRO_API_KEY': '53d17db0-fad6-4de2-9513-6d646845613c',
+          'X-CMC_PRO_API_KEY': process.env.API,
         },
       },
     );
-    console.log(response.data.data[symbol].quote.USD.price.toFixed(1), symbol);
     return parseFloat(response.data.data[symbol].quote.USD.price.toFixed(1));
   } catch (error) {
     console.error('Error fetching crypto price:', error.message);
@@ -76,7 +73,7 @@ const start = () => {
           resize_keyboard: true,
         },
       });
-      setInterval(checkCryptoPrices, 6000);
+      setInterval(checkCryptoPrices, 60000); //Обновление курса раз в минуту
       return await bot.sendMessage(
         chatId,
         `Сейчас подключено отслеживание ${Object.keys(cryptoData).map(
@@ -99,7 +96,6 @@ const start = () => {
       count += 1;
       if (count === 1) {
         cryptoData[temp] = { min: text };
-        console.log(cryptoData);
         await bot.sendMessage(chatId, 'При каком максимуме оповещать?');
       } else {
         cryptoData[temp] = { min: cryptoData[temp].min, max: text };
@@ -142,7 +138,6 @@ const addCrypto = async (coin) => {
       }
       return acc;
     }, {});
-    console.log(updatedCryptoData);
     cryptoData = updatedCryptoData;
     return await bot.sendMessage(chatId, `Вы отписались от отслеживания ${coin}`);
   } else {
